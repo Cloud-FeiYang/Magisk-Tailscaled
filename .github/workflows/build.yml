@@ -195,7 +195,6 @@ jobs:
               echo "No changes to commit update ${{ env.LATEST_TAILSCALE_VERSION_TAG }}"
             fi
           else
-            echo "Files for architecture $ARCH do not exist"
             exit 0;
           fi
         done
