@@ -193,9 +193,6 @@ jobs:
             git add files/tailscale.combined-${ARCH}
             if git diff --staged --quiet; then
               echo "No changes to commit update ${{ env.LATEST_TAILSCALE_VERSION_TAG }}"
-            fi
-          else
-            exit 0;
           fi
         done
         git add .
