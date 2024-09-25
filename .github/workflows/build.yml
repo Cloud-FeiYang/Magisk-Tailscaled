@@ -193,11 +193,17 @@ jobs:
             git add files/tailscale.combined-${ARCH}
             if git diff --staged --quiet; then
               echo "No changes to commit update ${{ env.LATEST_TAILSCALE_VERSION_TAG }}"
+              exit 0
+            fi
+          else
+            echo "Files for architecture $ARCH do not exist"
+            exit 0;
           fi
         done
         git add .
         if git diff --staged --quiet; then
           echo "No changes to commit"
+          exit 0
         else
           git commit -m "Updated from ${{ env.OLD_TAILSCALE_VERSION_TAG }} to ${{ env.LATEST_TAILSCALE_VERSION_TAG }}"
           git tag ${{ env.LATEST_TAILSCALE_VERSION_TAG }}.0
