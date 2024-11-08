@@ -10,6 +10,41 @@ on:
 permissions:
   contents: write
 jobs:
+  sync_tailscale_latest_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Repository Owner
+        run: echo "Repository Owner:${{ github.repository_owner }}"
+
+      - name: Check Repository Owner
+        id: check_owner
+        run: |
+          if [ "${{ github.repository_owner }}" != "Cloud-FeiYang" ]; then
+            echo "Repository owner is not Cloud-FeiYang. Cancelling the job."
+            exit 1
+          fi
+
+      - name: Set Version
+        id: set_version
+        run: echo "::set-output name=version::${{ github.event.inputs.version }}"
+
+      - name: Get Latest Version
+        id: get_latest_version
+        run: |
+          if [ -z "${{ steps.set_version.outputs.version }}" ]; then
+            latest_version=$(wget -O- https://pkgs.tailscale.com/stable/ | grep tailscale_ | head -1 | cut -d'_' -f 2)
+          else
+            latest_version="${{ steps.set_version.outputs.version }}"
+          fi
+          echo "latest_version=$latest_version" >> $GITHUB_ENV
+          echo $latest_version
+
+      - name: Check Release Existence
+        id: check_release_if_exist
+        run: |
+          code=$(curl -I -m 10 -o /dev/null -s -w %{http_code} "https://codeload.github.com/${{ github.repository_owner }}/Magisk-Tailscaled/zip/refs/tags/${{ env.latest_version }}")
+          echo "code=$code" >> $GITHUB_ENV
+          echo $code
   build:
     runs-on: ubuntu-latest
     steps:
@@ -149,16 +184,16 @@ jobs:
         sed -i "s/^versionCode=.*/versionCode=$newVersionCode/" module.prop
 
         # Estimate the zip url location
-        zipUrl="https://github.com/anasfanani/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-$versionString.zip" # Universal
-        zipUrl_arm="https://github.com/anasfanani/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-arm-$versionString.zip" # Arm
-        zipUrl_arm64="https://github.com/anasfanani/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-arm64-$versionString.zip" # Arm64
+        zipUrl="https://github.com/Cloud-FeiYang/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-$versionString.zip" # Universal
+        zipUrl_arm="https://github.com/Cloud-FeiYang/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-arm-$versionString.zip" # Arm
+        zipUrl_arm64="https://github.com/Cloud-FeiYang/Magisk-Tailscaled/releases/download/$versionString/Magisk-Tailscaled-arm64-$versionString.zip" # Arm64
 
         # Update update.json
         jq '.version = $newVersion | .versionCode = $newVersionCode | .zipUrl = $newZipUrl | .changelog = $newChangelog' \
           --arg newVersion "${versionString}" \
           --arg newVersionCode "$newVersionCode" \
           --arg newZipUrl "$zipUrl" \
-          --arg newChangelog "https://raw.githubusercontent.com/anasfanani/Magisk-Tailscaled/master/CHANGELOG.md" \
+          --arg newChangelog "https://raw.githubusercontent.com/Cloud-FeiYang/Magisk-Tailscaled/master/CHANGELOG.md" \
           update.json > temp.json && mv temp.json update.json
 
         # Update update-arm.json
@@ -167,7 +202,7 @@ jobs:
           --arg newVersion "${versionString}-arm" \
           --arg newVersionCode "$newVersionCode" \
           --arg newZipUrl "$zipUrl_arm" \
-          --arg newChangelog "https://raw.githubusercontent.com/anasfanani/Magisk-Tailscaled/master/CHANGELOG.md" \
+          --arg newChangelog "https://raw.githubusercontent.com/Cloud-FeiYang/Magisk-Tailscaled/master/CHANGELOG.md" \
           update-arm.json > temp.json && mv temp.json update-arm.json
 
         # Update update-arm64.json
@@ -176,7 +211,7 @@ jobs:
           --arg newVersion "${versionString}-arm64" \
           --arg newVersionCode "$newVersionCode" \
           --arg newZipUrl "$zipUrl_arm64" \
-          --arg newChangelog "https://raw.githubusercontent.com/anasfanani/Magisk-Tailscaled/master/CHANGELOG.md" \
+          --arg newChangelog "https://raw.githubusercontent.com/Cloud-FeiYang/Magisk-Tailscaled/master/CHANGELOG.md" \
           update-arm64.json > temp.json && mv temp.json update-arm64.json
 
     - name: Commit and push
