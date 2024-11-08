@@ -42,7 +42,7 @@ jobs:
       - name: Check Release Existence
         id: check_release_if_exist
         run: |
-          code=$(curl -I -m 10 -o /dev/null -s -w %{http_code} "https://codeload.github.com/${{ github.repository_owner }}/Magisk-Tailscaled/zip/refs/tags/${{ env.latest_version }}")
+          code=$(curl -I -m 10 -o /dev/null -s -w %{http_code} "https://codeload.github.com/${{ github.repository_owner }}/Magisk-Tailscaled/releases/tag/${{ env.latest_version }}")
           echo "code=$code" >> $GITHUB_ENV
           echo $code
   build:
