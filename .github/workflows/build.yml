@@ -215,6 +215,7 @@ jobs:
           update-arm64.json > temp.json && mv temp.json update-arm64.json
 
     - name: Commit and push
+      if: env.code == '404'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
@@ -241,6 +242,7 @@ jobs:
         fi
   
     - name: Create Zip file for release
+      if: env.code == '404'
       run: |
         versionString="${{ env.LATEST_TAILSCALE_VERSION_TAG }}.0"
         mkdir -p dist
@@ -259,6 +261,7 @@ jobs:
         cd ..
 
     - name: Create Release
+      if: env.code == '404'
       id: create_release
       uses: softprops/action-gh-release@v2
       env:
